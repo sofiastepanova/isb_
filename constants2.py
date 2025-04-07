@@ -1,0 +1,5 @@
+INPUT_ENCODED_FILE = 'cod17.txt'
+FREQUENCIES_FILE = 'russian_letter_frequency.json'
+OUTPUT_FREQUENCIES_FILE = 'encoded_frequencies.json'
+OUTPUT_MAPPING_FILE = 'mapping.json'
+OUTPUT_DECRYPTED_FILE = 'decrypted.txt'
