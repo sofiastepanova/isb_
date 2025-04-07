@@ -1,109 +1,141 @@
 import json
 from collections import Counter
+from constants2 import (
+    INPUT_ENCODED_FILE,
+    FREQUENCIES_FILE,
+    OUTPUT_FREQUENCIES_FILE,
+    OUTPUT_MAPPING_FILE,
+    OUTPUT_DECRYPTED_FILE
+
+)
 
 
-def load_cipher_text(file_path):
+
+def get_cipher(input_filename):
     """
-    Предназначена  для чтения текстового содержимого из файла по указанному пути
-    :param file_path: Путь к файлу
+    Предназначена для чтения текстового содержимого из файла по указанному пути
+    :param input_filename: Путь к файлу
     :return: Возвращает строку
     """
-    with open(file_path, 'r', encoding='utf-8') as file:
-        return file.read()
+    try:
+        with open(input_filename, 'r', encoding='utf-8') as f:
+            return f.read()
+    except FileNotFoundError:
+        print(f"Ошибка: Файл {input_filename} не найден.")
 
 
-def load_russian_frequencies(file_path):
+
+
+def get_russian_frequencies(freq_filename):
     """
-    Предназначена  для загрузки данных о частоте использования русских букв
-    :param file_path: Путь к файлу
+    Предназначена для загрузки данных о частоте использования русских букв
+    :param freq_filename: Путь к файлу
     :return: Возвращает словарь
     """
-    with open(file_path, 'r', encoding='utf-8') as file:
-        return json.load(file)
+    try:
+        with open(freq_filename, 'r', encoding='utf-8') as f:
+            return json.load(f)
+
+    except FileNotFoundError:
+        print(f"Ошибка: Файл {freq_filename} не найден.")
 
 
-def analyze_frequency(text):
+
+def analyze_frequency(input_string):
     """
     Анализирует частоту появления каждого символа в переданном тексте
-    :param text: Текст, который нужно проанализировать
+    :param input_string: Текст, который нужно проанализировать
     :return: Возвращает словарь
     """
-    freq_counter = Counter(text)
-    total_chars = sum(freq_counter.values())
-    return {char: count / total_chars for char, count in freq_counter.items()}
+    try:
+        if not input_string:
+            raise ValueError("Входная строка пуста.")
+        char_count = Counter(input_string)
+        total = sum(char_count.values())
+        return {char: cnt / total for char, cnt in char_count.items()}
+    except Exception as e:
+        print(f"Ошибка при анализе частоты символов: {e}")
 
 
-def create_mapping(cipher_freq, russian_freq):
+def get_mapping(encoded_freq, russian_freq):
     """
     Предназначена для сопоставления символов зашифрованного текста и символов русского алфавита
-    :param cipher_freq: Словарь, где ключи — это символы зашифрованного текста, а значения — их частоты
-    :param cipher_freq: Словарь, где ключи — это символы русского алфавита, а значения — их частоты
+    :param encoded_freq: Словарь, где ключи — это символы зашифрованного текста, а значения — их частоты
+    :param russian_freq: Словарь, где ключи — это символы русского алфавита, а значения — их частоты
     :return: Словарь, где ключи — это символы зашифрованного текста, а значения — соответствующие символы русского алфавита
     """
-    sorted_cipher = sorted(cipher_freq.items(), key=lambda x: x[1], reverse=True)
-    sorted_russian = sorted(russian_freq.items(), key=lambda x: x[1], reverse=True)
+    try:
+        if not encoded_freq or not russian_freq:
+            raise ValueError("Один из входных словарей пуст.")
 
-    mapping = {}
-    for (cipher_char, _), (russian_char, _) in zip(sorted_cipher, sorted_russian):
-        if cipher_char not in mapping.values():
-            mapping[cipher_char] = russian_char
-    return mapping
+        sorted_encoded = sorted(encoded_freq.items(), key=lambda x: x[1], reverse=True)
+        sorted_rus = sorted(russian_freq.items(), key=lambda x: x[1], reverse=True)
+
+        char_map = {}
+        for (encoded_char, _), (rus_char, _) in zip(sorted_encoded, sorted_rus):
+            if encoded_char not in char_map.values():
+                char_map[encoded_char] = rus_char
+
+        return char_map
+    except Exception as e:
+        print(f"Ошибка при создании таблицы соответствий: {e}")
 
 
-def decrypt_text(text, mapping):
+
+def decrypt_text(encoded_string, char_mapping):
     """
     Предназначена для расшифровки текста с использованием заранее созданного сопоставления
-    :param text: Строка, представляющая зашифрованный текст, который нужно расшифровать.
-    :param mapping: Словарь, где ключи — это символы зашифрованного текста, а значения — соответствующие символы русского алфавита.
+    :param encoded_string: Строка, представляющая зашифрованный текст, который нужно расшифровать.
+    :param char_mapping: Словарь, где ключи — это символы зашифрованного текста, а значения — соответствующие символы русского алфавита.
     :return: Расшифрованный текст
     """
-    return ''.join(mapping.get(char, char) for char in text)
+    return ''.join(char_mapping.get(ch, ch) for ch in encoded_string)
 
 
-def save_json(data, file_path):
+def json_data(data, output_filename):
     """
     предназначена для сохранения данных в формате JSON
     :param data: Данные, которые нужно сохранить
-    :param file_path: Путь к файлу
+    :param output_filename: Путь к файлу
     :return: None
     """
-    with open(file_path, 'w', encoding='utf-8') as file:
-        json.dump(data, file, ensure_ascii=False, indent=4)
+    with open(output_filename, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
 
 
-def save_text(data, file_path):
+def text_data(text_data, output_filename):
     """
     Предназначена для сохранения текстовых данных в файл
-    :param data: Строка, содержащая текстовые данные, которые нужно сохранить в файл
-    :param file_path: Путь к фалу
+    :param text_data: Строка, содержащая текстовые данные, которые нужно сохранить в файл
+    :param output_filename: Путь к фалу
     :return: None
     """
-    with open(file_path, 'w', encoding='utf-8') as file:
-        file.write(data)
+    with open(output_filename, 'w', encoding='utf-8') as f:
+        f.write(text_data)
 
 
 def main():
-    cipher_text = load_cipher_text('cod17.txt')
-    russian_frequencies = load_russian_frequencies('russian_letter_frequency.json')
+    encrypted_data = get_cipher(INPUT_ENCODED_FILE)
+    rus_char_freq = get_russian_frequencies(FREQUENCIES_FILE)
 
-    cipher_frequencies = analyze_frequency(cipher_text)
+    freq_analysis = analyze_frequency(encrypted_data)
 
-    cipher_frequencies_sorted = dict(
+    sorted_freq = dict(
         sorted(
-            cipher_frequencies.items(),
+            freq_analysis.items(),
             key=lambda item: (-item[1], item[0])
         )
     )
 
-    save_json(cipher_frequencies_sorted, 'cipher_frequencies.json')
+    json_data(sorted_freq, OUTPUT_FREQUENCIES_FILE)
 
-    mapping = create_mapping(cipher_frequencies, russian_frequencies)
-    decrypted_text = decrypt_text(cipher_text, mapping)
+    translation_table = get_mapping(freq_analysis, rus_char_freq)
+    decoded_text = decrypt_text(encrypted_data, translation_table)
 
-    save_json(mapping, 'mapping.json')
-    save_text(decrypted_text, 'decrypted.txt')
+    json_data(translation_table, OUTPUT_MAPPING_FILE)
+    text_data(decoded_text, OUTPUT_DECRYPTED_FILE)
 
-    print("Расшифровка завершена. Файлы: decrypted.txt, mapping.json, cipher_frequencies.json")
+    print("Расшифрованный текст готов =) ")
 
 
 if __name__ == "__main__":
