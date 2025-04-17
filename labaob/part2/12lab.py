@@ -1,14 +1,6 @@
 import json
 from collections import Counter
-from constants2 import (
-    INPUT_ENCODED_FILE,
-    FREQUENCIES_FILE,
-    OUTPUT_FREQUENCIES_FILE,
-    OUTPUT_MAPPING_FILE,
-    OUTPUT_DECRYPTED_FILE
-
-)
-
+from constants2 import *
 
 
 def get_cipher(input_filename):
@@ -24,90 +16,34 @@ def get_cipher(input_filename):
         print(f"Ошибка: Файл {input_filename} не найден.")
 
 
-
-
-def get_russian_frequencies(freq_filename):
+def get_key(key_filename):
     """
-    Предназначена для загрузки данных о частоте использования русских букв
-    :param freq_filename: Путь к файлу
-    :return: Возвращает словарь
+    Предназначена для загрузки ключа расшифровки из JSON-файла
+    :param key_filename: Путь к файлу с ключом
+    :return: Возвращает словарь с ключом
     """
     try:
-        with open(freq_filename, 'r', encoding='utf-8') as f:
+        with open(key_filename, 'r', encoding='utf-8') as f:
             return json.load(f)
-
     except FileNotFoundError:
-        print(f"Ошибка: Файл {freq_filename} не найден.")
+        print(f"Ошибка: Файл {key_filename} не найден.")
 
 
-
-def analyze_frequency(input_string):
+def decrypt_text_with_key(encoded_string, key):
     """
-    Анализирует частоту появления каждого символа в переданном тексте
-    :param input_string: Текст, который нужно проанализировать
-    :return: Возвращает словарь
-    """
-    try:
-        if not input_string:
-            raise ValueError("Входная строка пуста.")
-        char_count = Counter(input_string)
-        total = sum(char_count.values())
-        return {char: cnt / total for char, cnt in char_count.items()}
-    except Exception as e:
-        print(f"Ошибка при анализе частоты символов: {e}")
-
-
-def get_mapping(encoded_freq, russian_freq):
-    """
-    Предназначена для сопоставления символов зашифрованного текста и символов русского алфавита
-    :param encoded_freq: Словарь, где ключи — это символы зашифрованного текста, а значения — их частоты
-    :param russian_freq: Словарь, где ключи — это символы русского алфавита, а значения — их частоты
-    :return: Словарь, где ключи — это символы зашифрованного текста, а значения — соответствующие символы русского алфавита
-    """
-    try:
-        if not encoded_freq or not russian_freq:
-            raise ValueError("Один из входных словарей пуст.")
-
-        sorted_encoded = sorted(encoded_freq.items(), key=lambda x: x[1], reverse=True)
-        sorted_rus = sorted(russian_freq.items(), key=lambda x: x[1], reverse=True)
-
-        char_map = {}
-        for (encoded_char, _), (rus_char, _) in zip(sorted_encoded, sorted_rus):
-            if encoded_char not in char_map.values():
-                char_map[encoded_char] = rus_char
-
-        return char_map
-    except Exception as e:
-        print(f"Ошибка при создании таблицы соответствий: {e}")
-
-
-
-def decrypt_text(encoded_string, char_mapping):
-    """
-    Предназначена для расшифровки текста с использованием заранее созданного сопоставления
-    :param encoded_string: Строка, представляющая зашифрованный текст, который нужно расшифровать.
-    :param char_mapping: Словарь, где ключи — это символы зашифрованного текста, а значения — соответствующие символы русского алфавита.
+    Предназначена для расшифровки текста с использованием готового ключа
+    :param encoded_string: Зашифрованный текст
+    :param key: Словарь с сопоставлением символов
     :return: Расшифрованный текст
     """
-    return ''.join(char_mapping.get(ch, ch) for ch in encoded_string)
-
-
-def json_data(data, output_filename):
-    """
-    предназначена для сохранения данных в формате JSON
-    :param data: Данные, которые нужно сохранить
-    :param output_filename: Путь к файлу
-    :return: None
-    """
-    with open(output_filename, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
+    return ''.join(key.get(ch, ch) for ch in encoded_string)
 
 
 def text_data(text_data, output_filename):
     """
     Предназначена для сохранения текстовых данных в файл
-    :param text_data: Строка, содержащая текстовые данные, которые нужно сохранить в файл
-    :param output_filename: Путь к фалу
+    :param text_data: Строка, содержащая текстовые данные
+    :param output_filename: Путь к файлу
     :return: None
     """
     with open(output_filename, 'w', encoding='utf-8') as f:
@@ -115,27 +51,22 @@ def text_data(text_data, output_filename):
 
 
 def main():
+    # Получаем зашифрованный текст из cod4.txt
     encrypted_data = get_cipher(INPUT_ENCODED_FILE)
-    rus_char_freq = get_russian_frequencies(FREQUENCIES_FILE)
 
-    freq_analysis = analyze_frequency(encrypted_data)
+    # Загружаем ключ из key.json
+    key = get_key(KEY_FILE)
 
-    sorted_freq = dict(
-        sorted(
-            freq_analysis.items(),
-            key=lambda item: (-item[1], item[0])
-        )
-    )
+    if encrypted_data and key:
+        # Расшифровываем текст с использованием ключа
+        decoded_text = decrypt_text_with_key(encrypted_data, key)
 
-    json_data(sorted_freq, OUTPUT_FREQUENCIES_FILE)
+        # Сохраняем расшифрованный текст в decrypted.txt
+        text_data(decoded_text, OUTPUT_DECRYPTED_FILE)
 
-    translation_table = get_mapping(freq_analysis, rus_char_freq)
-    decoded_text = decrypt_text(encrypted_data, translation_table)
-
-    json_data(translation_table, OUTPUT_MAPPING_FILE)
-    text_data(decoded_text, OUTPUT_DECRYPTED_FILE)
-
-    print("Расшифрованный текст готов =) ")
+        print("Расшифрованный текст готов =)")
+    else:
+        print("Не удалось выполнить расшифровку: отсутствуют необходимые данные")
 
 
 if __name__ == "__main__":
