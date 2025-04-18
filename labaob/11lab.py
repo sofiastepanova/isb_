@@ -2,8 +2,6 @@ import json
 import os
 import random
 
-from collections import Counter, defaultdict
-
 from constants import *
 
 
