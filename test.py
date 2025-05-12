@@ -35,8 +35,9 @@ def same_bits_test(bits):
     for i in range(1, n):
         if bits[i] != bits[i - 1]:
             r += 1
+    d=2 * math.sqrt(2 * n) * pi * (1 - pi)
 
-    return erfc(abs(r - 2 * n * pi * (1 - pi)) / 2 * math.sqrt(2 * n) * pi * (1 - pi))
+    return erfc(abs(r - 2 * n * pi * (1 - pi)) / d)
 
 
 def longest_sequence_test(data):
@@ -107,7 +108,6 @@ def save_test_results(filename, cpp_seq, java_seq):
     :param java_seq: последовательность Java
     """
     with open(filename, "w") as f:
-        # Тестирование последовательности C++
         if cpp_seq:
             freq_cpp = frequency_test(cpp_seq)
             same_bits_cpp = same_bits_test(cpp_seq)
@@ -120,7 +120,7 @@ def save_test_results(filename, cpp_seq, java_seq):
         else:
             f.write("последовательность c++ не была загружена\n\n")
 
-        # Тестирование последовательности Java
+        
         if java_seq:
             freq_java = frequency_test(java_seq)
             same_bits_java = same_bits_test(java_seq)
@@ -135,15 +135,12 @@ def save_test_results(filename, cpp_seq, java_seq):
 
 
 def main():
-    # Загрузка последовательностей
     cpp_sequence, java_sequence = load_sequences()
-
-    # Проверка наличия последовательностей
     if not cpp_sequence and not java_sequence:
         print("Ошибка: не удалось загрузить ни одну последовательность")
         return
 
-    # Сохранение результатов тестов
+
     save_test_results("test_results.txt", cpp_sequence, java_sequence)
     print("Результаты тестов сохранены в test_results.txt")
 
