@@ -35,9 +35,10 @@ def same_bits_test(bits):
     for i in range(1, n):
         if bits[i] != bits[i - 1]:
             r += 1
-    d=2 * math.sqrt(2 * n) * pi * (1 - pi)
+    n = abs(r - 2 * n * pi * (1 - pi))
+    d = 2 * math.sqrt(2 * n) * pi * (1 - pi)
+    return erfc(n / d)
 
-    return erfc(abs(r - 2 * n * pi * (1 - pi)) / d)
 
 
 def longest_sequence_test(data):
