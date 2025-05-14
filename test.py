@@ -26,18 +26,35 @@ def same_bits_test(bits):
     n = len(bits)
     pi = bits.count('1') / n
 
-
     if abs(pi - 0.5) >= 2 / math.sqrt(n):
         return 0.0
-    r = 1
 
-    for i in range(1, n):
-        if bits[i] != bits[i - 1]:
-            r += 1
-    num = abs(r - 2 * n * pi * (1 - pi))
-    d = 2 * math.sqrt(2 * n) * pi * (1 - pi)
-    return erfc(num / d)
+    v_n = sum(1 for i in range(1, n) if bits[i] != bits[i - 1])
 
+    numerator = abs(v_n - 2 * n * pi * (1 - pi))
+    denominator = 2 * math.sqrt(2 * n) * pi * (1 - pi)
+    return math.erfc(numerator / denominator)
+
+
+
+
+def consecutive_runs_test(sequence: str) -> float:
+    """
+    Тест на одинаково подряд идущие биты.
+    :param sequence: Бинарная строка.
+    :return: p-значение.
+    """
+    n = len(sequence)
+    p = sequence.count('1') / n
+
+    if abs(p - 0.5) >= 2 / math.sqrt(n):
+        return 0.0
+
+    rr = sum(1 for i in range(1, n) if sequence[i] != sequence[i - 1])
+
+    numerator = abs(rr - 2 * n * p * (1 - p))
+    denominator = 2 * math.sqrt(2 * n) * p * (1 - p)
+    return math.erfc(numerator / denominator)
 
 
 def longest_sequence_test(data):
@@ -120,7 +137,7 @@ def save_test_results(filename, cpp_seq, java_seq):
         else:
             f.write("последовательность c++ не была загружена\n\n")
 
-        
+
         if java_seq:
             freq_java = frequency_test(java_seq)
             same_bits_java = same_bits_test(java_seq)
