@@ -17,7 +17,6 @@ def frequency_test(bits):
 
 
 
-
 def same_bits_test(bits):
     """
     Тест на одинаковые подряд идущие биты
@@ -28,16 +27,16 @@ def same_bits_test(bits):
     pi = bits.count('1') / n
 
 
-    if abs(pi - 0.5) >= (2 / math.sqrt(n)):
+    if abs(pi - 0.5) >= 2 / math.sqrt(n):
         return 0.0
-
     r = 1
+
     for i in range(1, n):
         if bits[i] != bits[i - 1]:
             r += 1
-    n = abs(r - 2 * n * pi * (1 - pi))
+    num = abs(r - 2 * n * pi * (1 - pi))
     d = 2 * math.sqrt(2 * n) * pi * (1 - pi)
-    return erfc(n / d)
+    return erfc(num / d)
 
 
 
