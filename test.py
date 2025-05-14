@@ -38,19 +38,19 @@ def same_bits_test(bits):
 
 
 
-def consecutive_runs_test(sequence: str) -> float:
+def consecutive_runs_test(bits: str) -> float:
     """
     Тест на одинаково подряд идущие биты.
     :param sequence: Бинарная строка.
     :return: p-значение.
     """
-    n = len(sequence)
-    p = sequence.count('1') / n
+    n = len(bits)
+    p = bits.count('1') / n
 
     if abs(p - 0.5) >= 2 / math.sqrt(n):
         return 0.0
 
-    rr = sum(1 for i in range(1, n) if sequence[i] != sequence[i - 1])
+    rr = sum(1 for i in range(1, n) if bits[i] != bits[i - 1])
 
     numerator = abs(rr - 2 * n * p * (1 - p))
     denominator = 2 * math.sqrt(2 * n) * p * (1 - p)
